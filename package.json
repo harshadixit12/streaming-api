@@ -1,0 +1,11 @@
+{
+  "name": "streaming-api",
+  "version": "1.0.0",
+  "description": "Server that streams a variety of stuff.",
+  "main": "app.js",
+  "scripts": {
+    "test": "test"
+  },
+  "author": "",
+  "license": "ISC"
+}
