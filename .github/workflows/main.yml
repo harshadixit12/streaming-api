@@ -27,7 +27,7 @@ jobs:
       - name: Create new ElasticBeanstalk Application Version
         run: |
           aws elasticbeanstalk create-application-version \
-          --application-name StreamingAPI \
+          --application-name streaming-api \
           --source-bundle S3Bucket="beanstalk-streaming-api-bucket",S3Key="deploy_package.zip" \
           --version-label "ver-${{ github.sha }}" \
           --description "commit-sha-${{ github.sha }}"
