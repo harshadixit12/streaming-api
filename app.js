@@ -1,7 +1,10 @@
 const stream = require('stream');
-const http = require('http');
+const https = require('https');
+const fs = require('fs');
+const readline = require('readline');
 
-const port = 8080;
+const defaultPort = 8080;
+const port = 4430;
 
 const timeout = 10000;
 
@@ -46,7 +49,12 @@ var ObjectFeed = function () {
   return readable;
 }
 
-http.createServer(function(req, res) {
+let server = https.createServer(
+  {
+    key: fs.readFileSync('server-key.pem'),
+    cert: fs.readFileSync('server-cert.pem')
+  },
+  function(req, res) {
   switch (req.url) {
     case '/prices':
       handlePriceRoute(req,res);
@@ -54,10 +62,20 @@ http.createServer(function(req, res) {
     case '/news':
       handleNewsRoute(req,res);
       break;
+    case '/lorem-ipsum':
+      handleLoremIpsum(req, res);
+      break;
     default:
       return handleNotFound(req, res);
   }
-}).listen(8080)
+});
+
+server.listen(port);
+
+server.setTimeout(10000, function(socket) {
+  socket.write('Too slow.', 'utf8');
+  socket.end();
+})
 
 function handlePriceRoute (req, res) {
   try {
@@ -99,4 +117,37 @@ function handleNewsRoute (req, res) {
 function handleNotFound(req, res) {
   res.statusCode = 404;
   res.end();
+}
+
+function handleLoremIpsum(req, res) {
+  console.log("Dirname: ", __dirname);
+  try {
+    const filePath = '/lorem-ipsum.txt';
+    const file = fs.createReadStream(__dirname + filePath);
+    var stat = fs.statSync(__dirname + filePath);
+
+    res.writeHead(200, {
+      'Content-Type': 'text/plain',
+      'Content-Length': stat.size,
+      'Access-Control-Allow-Origin': '*'
+    });
+
+    const rl = readline.createInterface({
+      input: file,
+      crlfDelay: Infinity
+    });
+  
+    rl.on('line', (line) => {
+      console.log(line, '\n<<<<<<<<<<<  >>>>>>>>>>>\n');  
+      res.write(line);
+    }).on('error', () => {
+      console.log(error);
+    });
+
+  }
+  catch (e) {
+    console.log(e);
+    res.statusCode = 500;
+    res.end();
+  }
 }
